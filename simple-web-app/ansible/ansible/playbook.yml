@@ -1,0 +1,59 @@
+- hosts: webservers
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+        state: present
+
+    - name: Install Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker and docker-compose plugin
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Ensure docker service started
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Create deploy directory
+      file:
+        path: /opt/simple-webapp
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Copy app (or pull from git)
+      git:
+        repo: 'https://github.com/your/repo.git'
+        dest: /opt/simple-webapp
+        version: main
+
+    - name: Run docker-compose
+      shell: docker compose up -d --build
+      args:
+        chdir: /opt/simple-webapp
