@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><title>Simple Web App</title></head>
+<body>
+<form action="/submit/" method="post">
+    <input type="text" name="text" placeholder="Enter text">
+    <button type="submit">Submit</button>
+</form>
+<h2>Last 5 Submissions:</h2>
+<ul>
+    {% for sub in submissions %}
+    <li>{{ sub.text }} ({{ sub.created_at }})</li>
+    {% endfor %}
+</ul>
+</body>
+</html>
